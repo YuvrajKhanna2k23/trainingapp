@@ -4,6 +4,7 @@ using ChatApp.Context.EntityClasses;
 using ChatApp.Models.MessageModel;
 using ChatApp.Models.UsersModel;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -15,13 +16,14 @@ namespace ChatApp.Infrastructure.ServiceImplementation
     {
         private readonly ArgusChatContext context;
         private readonly IWebHostEnvironment environment;
-        private readonly Chathub chatHub;
+        private readonly IHubContext<Chathub> hubContext;
 
-        public ChatServices(ArgusChatContext context, IWebHostEnvironment environment, Chathub chatHub)
+        public ChatServices(ArgusChatContext context, IWebHostEnvironment environment, IHubContext<Chathub> hubContext
+            )
         {
             this.context = context;
             this.environment = environment;
-            this.chatHub = chatHub;
+            this.hubContext = hubContext;
         }
         // we will just uploading the data files to database 
         public void SendMessage(TextMessageModel message)
@@ -155,7 +157,7 @@ namespace ChatApp.Infrastructure.ServiceImplementation
                     tocontent = conversations.ElementAt(0).Content;
                     toDateTime = conversations.ElementAt(0).DateTime;
                 }
-                /*.ElementAt(0);*/
+ 
                 SearchModel Temp = new SearchModel()
                 {
                     UserName = profile.UserName,
@@ -175,7 +177,7 @@ namespace ChatApp.Infrastructure.ServiceImplementation
         {
             // we will start with getting the message where we are reciever then we will if we are reciever then we will mark the messages as seen. 
 
-            List<MessageText> msgs = null;
+            List<Message> msgs = null;
             var CurUserId = FetchUserIdByUsername(username);
             if (selusername == "All")
             {
@@ -191,7 +193,7 @@ namespace ChatApp.Infrastructure.ServiceImplementation
             }
             foreach (var msg in msgs)
             {
-                msg.IsSeen = true;
+                msg.IsSeen = 1;
             }
             context.SaveChanges();
 
@@ -208,7 +210,7 @@ namespace ChatApp.Infrastructure.ServiceImplementation
             var profile = context.Profiles.Where(u => u.Id == msg.ReceiverId);
             if (profile != null)
             {
-                var message = new MessageText();
+                var message = new Message();
                 var filename = Guid.NewGuid().ToString(); // new generated image file name
                 var extension = Path.GetExtension(msg.File.FileName);// Get Extension Of the File
                 var filetype = msg.File.ContentType.Split('/')[0];
@@ -239,10 +241,10 @@ namespace ChatApp.Infrastructure.ServiceImplementation
 
                 message.SenderId = msg.SenderId ;
                 message.ReceiverId = msg.ReceiverId;
-                message.IsReply = msg.ReplyedToId == 0 ? false : true;
-                message.ReplyedToId = msg.ReplyedToId;
+                message.IsReply = msg.ReplyedToId == 0 ? 0 : 1;
+                message.RepliedToId = (int)msg.ReplyedToId;
                 
-                message.IsSeen = false;
+                message.IsSeen = 0;
                 message.DateTime = DateTime.Now;
                 
                 context.Messages.Add(message);
@@ -270,11 +272,12 @@ namespace ChatApp.Infrastructure.ServiceImplementation
             Connection Receiver = this.context.Connections.FirstOrDefault(u => u.ProfileId == reciever);
             if (Receiver != null)
             {
-                this.chatHub.Clients.Clients(Sender.SignalId, Receiver.SignalId).SendAsync("recieveMessage", response);
+                this.hubContext
+                    .Clients.Clients(Sender.SignalId, Receiver.SignalId).SendAsync("recieveMessage", response);
             }
             else
             {
-                this.chatHub.Clients.Client(Sender.SignalId).SendAsync("recieveMessage", response);
+                this.hubContext.Clients.Client(Sender.SignalId).SendAsync("recieveMessage", response);
             }
         }
     }

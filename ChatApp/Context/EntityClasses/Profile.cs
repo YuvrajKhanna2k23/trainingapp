@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChatApp.Context.EntityClasses;
 
@@ -41,7 +42,9 @@ public partial class Profile
 
     public virtual ICollection<Group> Groups { get; set; } = new List<Group>();
 
+    [NotMapped]
     public virtual ICollection<Notification> NotificationReceivers { get; set; } = new List<Notification>();
 
+    [NotMapped]
     public virtual ICollection<Notification> NotificationSenders { get; set; } = new List<Notification>();
 }

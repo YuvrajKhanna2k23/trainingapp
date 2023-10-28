@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChatApp.Context.EntityClasses;
 
@@ -17,9 +18,12 @@ public partial class Notification
 
     public DateTime DateTime { get; set; }
 
+    
     public virtual Group? Group { get; set; }
 
-    public virtual Profile Receiver { get; set; } = null!;
+    
+    public virtual Profile Receiver { get; set; } 
 
-    public virtual Profile Sender { get; set; } = null!;
+    
+    public virtual Profile Sender { get; set; } 
 }

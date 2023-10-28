@@ -44,7 +44,7 @@ namespace ChatApp.Infrastructure.ServiceImplementation
                     UserName = regModel.UserName,
                     Email = regModel.Email,
                     CreatedAt = DateTime.UtcNow,
-                    ProfileType = ProfileType.User,
+                    ProfileType = (int)ProfileType.User,
                     // we will add image path for default image  
                     ImagePath = "/Images/default.png"
                 };

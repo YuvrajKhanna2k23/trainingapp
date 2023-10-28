@@ -18,6 +18,10 @@ builder.Services.AddControllers();
 
 // Added DbContext file
 builder.Services.AddDbContext<ChatAppContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddDbContext<ArgusChatContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+
+// Add Dependency injection 
+builder.Services.AddSignalR();
 
 // Added Authentication 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -85,6 +89,7 @@ builder.Services.AddSwaggerGen(c =>
 // Service Registration
 builder.Services.AddScoped<IProfileService,ProfileService>();
 builder.Services.AddScoped<IChatService, ChatServices>();
+builder.Services.AddScoped<Chathub>();
 // In production, the Angular files will be served from this directory
 
 builder.Services.AddSpaStaticFiles(configuration =>
@@ -127,8 +132,6 @@ app.UseRouting();
 app.UseAuthorization();
 app.UseEndpoints(endpoints =>
 {
-    /*endpoints.MapControllers();*/
-    endpoints.MapControllerRoute("Default", "{controller=Home}/{action=Index}/{id?}");
     endpoints.MapHub<Chathub>("/Chathub");
 });
 

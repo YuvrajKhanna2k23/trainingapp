@@ -17,7 +17,9 @@ namespace ChatApp
             this.chatService = chatservice;
         }
 
+      
         // build in method for starting the connection when we start connection
+        #region OneToOneHub
         public override Task OnConnectedAsync()
         {
             return base.OnConnectedAsync();
@@ -85,8 +87,8 @@ namespace ChatApp
             Message newMessage = null;
             TextMessageModel response = null;
             string replyMessage;
-            /*int messageFromId = chatService.FetchUserIdByUsername();
-            int messageToId = chatService.FetchUserIdByUsername(message.MessageTo);*/
+            int messageFromId = message.SenderId;
+            int messageToId = message.ReceiverId;
             newMessage = new Message
             {
                 Content = message.Content,
@@ -95,6 +97,7 @@ namespace ChatApp
                 ReceiverId = message.ReceiverId,
                 RepliedToId = message.RepliedToId,
                 IsReply = message.IsReply,
+                RepliedContent = message.RepliedContent,
                 IsSeen = 0,
                 Type = "Null",
             };
@@ -112,6 +115,7 @@ namespace ChatApp
             response = new TextMessageModel
             {
                 Id = newMessage.Id,
+                RepliedContent = newMessage.RepliedContent,
                 Content = newMessage.Content,
                 DateTime = DateTime.Now,
                 SenderId = message.SenderId,
@@ -125,7 +129,59 @@ namespace ChatApp
         }
 
 
+        #endregion
 
+       /* #region GroupHub
+
+        public async Task sendGroupMsg(GMessageInModel message)
+        {
+            GroupMessage newMessage = null;
+            GMessageSendModel response = null;
+            string replyMessage;
+            int messageFromId = chatService.FetchUserIdByUsername();
+            int groupId = message.GroupId;
+            newMessage = new GroupMessages
+            {
+                Content = message.Content,
+                CreatedAt = DateTime.Now,
+                MessageFrom = messageFromId,
+                GrpId = groupId,
+                RepliedTo = (int)message.RepliedToId,
+                Type = null,
+            };
+            context.GroupMessages.Add(newMessage);
+            context.SaveChanges();
+            if (message.RepliedTo == 0)
+            {
+                replyContent = "";
+            }
+            else
+            {
+                var msg = context.GroupMessages.FirstOrDefault(msg => msg.Id == message.RepliedToId);
+                replyMessage = msg.Content;
+            }
+            var profile = context.Profiles.FirstOrDefault(p => p.Id == messageFromId);
+            response = new GMessageSendModel
+            {
+                Id = newMessage.Id,
+                Content = newMessage.Content,
+                CreatedAt = (DateTime)newMessage.CreatedAt,
+                MessageFrom = message.MessageFrom,
+                MessageFromImage = profile.ImagePath,
+                RepliedTo = replyMessage,
+                Type = null,
+            };
+            var groupMemberIds = context.GroupMembers.Where(u => u.GrpId == groupId).Select(u => u.ProfileId).ToList();
+            foreach (var memberId in groupMemberIds)
+            {
+                var connection = context.Connections.FirstOrDefault(u => u.ProfileId == memberId);
+                if (connection != null)
+                {
+                    await Clients.Clients(connection.SignalId).SendAsync("RecieveMessageGroup", response);
+                }
+            }
+        }
+        #endregion*/
 
     }
 

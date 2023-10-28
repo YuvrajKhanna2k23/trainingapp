@@ -30,6 +30,8 @@ public partial class ArgusChatContext : DbContext
 
     public virtual DbSet<Profile> Profiles { get; set; }
 
+    public virtual DbSet<ConversationResult> ConversationResults { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Name=ConnectionStrings:Default");
 
@@ -39,6 +41,20 @@ public partial class ArgusChatContext : DbContext
         // Map stored procedure
         modelBuilder.Entity<ConversationResult>().HasNoKey().ToView("GetAllConversationByUserId");
         modelBuilder.Entity<ConversationResult>().HasNoKey().ToView("GetAllConversationByUserIdsBoth");
+
+        
+
+        modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Receiver)
+                .WithMany(p => p.NotificationReceivers)
+                .HasForeignKey(n => n.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.Sender)
+            .WithMany(p => p.NotificationSenders)
+            .HasForeignKey(n => n.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Connection>(entity =>
         {
@@ -147,4 +163,6 @@ public partial class ArgusChatContext : DbContext
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+    
 }
