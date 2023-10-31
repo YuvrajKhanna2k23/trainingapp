@@ -6,6 +6,7 @@ import { ViewProfile } from '../../models/view-profile.model';
 import { EditProfile } from '../../models/edit-profile';
 import { Login } from 'src/app/models/login.model';
 import { CookieService } from 'ngx-cookie-service';
+import { SignalRService } from '../signalr/signal-r.service';
 
 
 @Injectable({
@@ -30,7 +31,7 @@ export class AuthService {
     return this.showToolbar;
   }
 
-  constructor(private http : HttpClient, private router:Router, private cookieService: CookieService) { }
+  constructor(private http : HttpClient, private router:Router, private cookieService: CookieService,private signalRService : SignalRService) { }
   
 
   signUp(userObj:any):Observable<any>{
@@ -83,6 +84,7 @@ export class AuthService {
     this.cookieService.delete('Authorization', '/');
     this.router.navigate(['/login']);
     this.$user.next(undefined);
+    this.signalRService.hubConnection?.stop().catch(error=>{console.log(error)});
   }
 
 }

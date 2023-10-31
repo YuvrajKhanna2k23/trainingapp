@@ -3,6 +3,8 @@ using ChatApp.Business.ServiceInterfaces;
 using ChatApp.Context;
 using ChatApp.Infrastructure.ServiceImplementation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.WebSockets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -21,7 +23,7 @@ builder.Services.AddDbContext<ChatAppContext>(options => options.UseSqlServer(bu
 builder.Services.AddDbContext<ArgusChatContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
 // Add Dependency injection 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options => { options.EnableDetailedErrors = true; });
 
 // Added Authentication 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -89,7 +91,7 @@ builder.Services.AddSwaggerGen(c =>
 // Service Registration
 builder.Services.AddScoped<IProfileService,ProfileService>();
 builder.Services.AddScoped<IChatService, ChatServices>();
-builder.Services.AddScoped<Chathub>();
+builder.Services.AddScoped<IGroupService,GroupServices>();
 // In production, the Angular files will be served from this directory
 
 builder.Services.AddSpaStaticFiles(configuration =>
@@ -132,7 +134,8 @@ app.UseRouting();
 app.UseAuthorization();
 app.UseEndpoints(endpoints =>
 {
-    endpoints.MapHub<Chathub>("/Chathub");
+    endpoints.MapControllerRoute("Default", "{controller=Home}/{action=Index}/{id?}");
+    endpoints.MapHub<Chathub>("/Chathub", o => o.Transports = HttpTransportType.WebSockets);
 });
 
 app.UseSwagger();
@@ -140,6 +143,8 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
 });
+
+app.UseWebSockets();
 
 //app.UseSpa(spa =>
 //{

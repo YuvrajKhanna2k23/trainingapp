@@ -6,6 +6,7 @@ import { ChatService } from '../../../services/chat/chat.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { Subscription } from 'rxjs';
 import { ViewProfile } from 'src/app/models/view-profile.model';
+import { SignalRService } from 'src/app/services/signalr/signal-r.service';
 
 @Component({
   selector: 'app-chatpage',
@@ -26,7 +27,7 @@ export class ChatpageComponent {
   profile : ViewProfile;
   private subscription: Subscription;
 
-  constructor(private chatService: ChatService, private authService: AuthService) {
+  constructor(private chatService: ChatService, private authService: AuthService, private signalRService : SignalRService) {
     console.log("this is done", this.currentUserName);
     
     this.subscription = this.chatService.Username.subscribe((message) => {
@@ -64,24 +65,47 @@ export class ChatpageComponent {
   
   handleData(data: any[]) {
        console.log(data);
+       
+      //  this.conversations = [
+      //   {
+      //     content: data[0],
+      //     senderId: this.currentUserId,
+      //     recieverId: data[1],
+      //     dateTime: Date.now(),
+      //     isReply: false,
+      //     isSeen: false,
+      //     replyedToId: 0,
+      //     type: 'Null'
+      //   },
+      //   ...this.conversations
+      // ];
+      let value = {
+            Content: data[0],
+            SenderId: this.currentUserId,
+            RecieverId: data[1],
+            DateTime: Date.now(),
+            IsReply: 0,
+            IsSeen: 0,
+            ReplyedToId: 0,
+            Type: 'Null',
+            RepliedContent : '',
+            Id: null
+          }
 
-       this.conversations = [
-        {
-          content: data[0],
-          senderId: this.currentUserId,
-          recieverId: data[1],
-          dateTime: Date.now(),
-          isReply: false,
-          isSeen: false,
-          replyedToId: 0,
-          type: 'Null'
-        },
-        ...this.conversations
-      ];
+      this.signalRService.hubConnection.invoke('sendMsg',value).catch((error)=>console.log(error));
       
-       console.log("ggg ", this.conversations);
+      
+
   }
   
+  OnChanges(){
+    this.signalRService.hubConnection.on('recieveMessage',(msg)=>{
+      console.log(msg);
+      this.conversations.push(msg);
+  
+    });
+  }
+
   ngOnDestroy() {
     // Unsubscribe to avoid memory leaks
     this.subscription.unsubscribe();

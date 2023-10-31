@@ -268,8 +268,10 @@ namespace ChatApp.Infrastructure.ServiceImplementation
 
         public void ResponsesToUsersMessage(int sender, int reciever, TextMessageModel response)
         {
-            Connection Sender = this.context.Connections.FirstOrDefault(u => u.ProfileId == sender);
-            Connection Receiver = this.context.Connections.FirstOrDefault(u => u.ProfileId == reciever);
+            Connection Sender = this.context.Connections.FirstOrDefault(u => u.ProfileId == reciever
+            );
+            Connection Receiver = this.context.Connections.FirstOrDefault(u => u.ProfileId == sender
+            );
             if (Receiver != null)
             {
                 this.hubContext

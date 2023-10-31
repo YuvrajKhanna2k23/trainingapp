@@ -11,7 +11,7 @@ namespace ChatApp.Models.MessageModel
 
         public int ReceiverId { get; set; }
 
-        public DateTime DateTime { get; set; }
+        public DateTime DateTime { get; set; } //
 
         public int RepliedToId { get; set; }
 
@@ -22,6 +22,6 @@ namespace ChatApp.Models.MessageModel
         public int IsSeen { get; set; }
 
         public string? Type { get; set; }
-        public int Id { get; internal set; }
+        public int? Id { get; internal set; }
     }
 }

@@ -25,7 +25,7 @@ namespace ChatApp.Controllers
             _profileService = profileService;
         }
 
-        
+
         [HttpPost("Login")]
         public IActionResult Login([FromBody] LoginModel loginModel)
         {
@@ -36,8 +36,8 @@ namespace ChatApp.Controllers
 
                 if (tokenString != null)
                 {
-                    
-                    response = Ok(new { token = tokenString  , username = loginModel.Username });
+
+                    response = Ok(new { token = tokenString, username = loginModel.Username });
                 }
 
                 return response;
@@ -55,27 +55,27 @@ namespace ChatApp.Controllers
                 var tokenString = _profileService.RegisterUser(registerModel);
                 if (tokenString != null)
                 {
-                   
+
                     return Ok(new { token = tokenString });
                 }
                 return BadRequest(new { Message = "User Already Exists. Please use different email and UserName." });
             }
-            return BadRequest(ModelState);
+            return BadRequest( new { Message = " this is bad state error.", ModelState});
         }
 
         // Creating a post method to update user information 
         [Authorize]
         [HttpPost("update-user")]
-        public IActionResult UpdateUserProfile([FromForm] UpdateModel updateModel, [FromQuery] string UserName)
+        public IActionResult UpdateUserProfile([FromForm] UpdateModel updateModel, [FromHeader] string UserName)
         {
             if (ModelState.IsValid)
-            {   
+            {
                 if (updateModel.UserName == UserName)
                 {
                     Profile user = _profileService.UpdateUser(updateModel, UserName);
                     return Ok(new { Message = " Updated the user", token = user });
                 }
-                return BadRequest( new {Message = "Unable to Update the user . Try again with correct information", ModelState});
+                return BadRequest(new { Message = "Unable to Update the user . Try again with correct information", ModelState });
             }
             return BadRequest(ModelState);
 
@@ -84,7 +84,7 @@ namespace ChatApp.Controllers
         [Authorize]
         [HttpGet("get-user")]
 
-        public IActionResult GetUserProfile([FromQuery]string UserName)
+        public IActionResult GetUserProfile([FromQuery] string UserName)
         {
             if (ModelState.IsValid)
             {
@@ -95,27 +95,7 @@ namespace ChatApp.Controllers
             return BadRequest(ModelState);
         }
 
-        /*private string GenerateJSONWebToken(Profile profileInfo)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[] {
-                    new Claim(JwtRegisteredClaimNames.Sub, profileInfo.UserName),
-                    new Claim(JwtRegisteredClaimNames.Email, profileInfo.Email),
-                    new Claim(ClaimsConstant.FirstNameClaim, profileInfo.FirstName),
-                    new Claim(ClaimsConstant.LastNameClaim, profileInfo.LastName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                    };
-
-            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
-            _config["Jwt:Issuer"],
-            claims,
-            expires: DateTime.Now.AddMinutes(120),
-            signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }*/
 
 
     }

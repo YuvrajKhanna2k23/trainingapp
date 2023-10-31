@@ -5,6 +5,7 @@ import { AuthService } from '../services/auth/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
+import { SignalRService } from '../services/signalr/signal-r.service';
 
 @Component({
   selector: 'app-login',
@@ -27,7 +28,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private auth:AuthService,
     private router :Router,
-    private cookieService : CookieService
+    private cookieService : CookieService,
+    private signalRService :SignalRService
   ) {}
   
   ngOnInit() {
@@ -65,7 +67,7 @@ export class LoginComponent implements OnInit, OnDestroy {
          (res) => {
               this.cookieService.set('Authorization',`${res.token}`);
               this.auth.setUser(res.username);
-              
+              this.signalRService.startConnection(res.username);
               this.router.navigate(['/chat-page']);
       }
       
